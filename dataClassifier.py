@@ -73,24 +73,31 @@ def enhancedFeatureExtractorDigit(datum):
   a = datum.getPixels()
 
   features = util.Counter()
-  section = 2
+  section = 1
 
-  for counterX in range(DIGIT_DATUM_WIDTH/section):
-      for counterY in range(DIGIT_DATUM_HEIGHT/section):
+  #horizontal strips
+  for counterY in range(DIGIT_DATUM_HEIGHT/section):
         featuresSection = 0
-        for x in range(section):
+        for x in range(DIGIT_DATUM_WIDTH):
           for y in range(section):
 
-            if datum.getPixel(x + section * counterX, y + section * counterY) > 0:
+            if datum.getPixel(x, y + section * counterY) > 0:
               featuresSection = featuresSection + 1
             else:
               featuresSection = featuresSection
+          features[(x, counterY)] = featuresSection #PROBLEM: overwriting itself
 
-        features[(counterX, counterY)] = featuresSection
-        #if featuresSection > 0:
-        #  features[(counterX,counterY)] = featuresSection
-        #else:
-        #  features[(counterX,counterY)] = 0
+  #verticle strips
+  for counterX in range(DIGIT_DATUM_WIDTH/section):
+        featuresSection = 0
+        for x in range(section):
+          for y in range(DIGIT_DATUM_HEIGHT):
+            if datum.getPixel(x + section * counterX, y) > 0:
+              featuresSection = featuresSection + 1
+            else:
+              featuresSection = featuresSection
+          features[(counterX, y)] = featuresSection
+
 
   return features
 
