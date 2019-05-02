@@ -9,7 +9,7 @@
 # This file contains feature extraction methods and harness 
 # code for data classification
 
-import mostFrequent
+import kNearest
 import naiveBayes
 import perceptron
 import mira
@@ -73,37 +73,30 @@ def enhancedFeatureExtractorDigit(datum):
   a = datum.getPixels()
 
   features = util.Counter()
-  section = 2 # 2 = 66%
+  section = 4 # 4 = 73/64
 
-  # horizontal strips
-  for counterY in range(DIGIT_DATUM_HEIGHT / section):
-    featuresSection = 0
-    for x in range(DIGIT_DATUM_WIDTH):
-      for y in range(section):
-
-        if datum.getPixel(x, y + section * counterY) > 0:
-          featuresSection = featuresSection + 1
-        else:
-          featuresSection = featuresSection
-      if featuresSection > 3:  # 3 = 66%
-        features[(x, counterY)] = featuresSection  # PROBLEM: overwriting itself
+  for x in range(DIGIT_DATUM_WIDTH):
+    for y in range(DIGIT_DATUM_HEIGHT):
+      if datum.getPixel(x, y) > 0:
+        features[(x, y)] = 1
       else:
-        features[(x, counterY)] = 0  # PROBLEM: overwriting itself
-
-  # vertical strips
+        features[(x, y)] = 0
+  """
+  return features
+ """
   for counterX in range(DIGIT_DATUM_WIDTH / section):
-    featuresSection = 0
-    for x in range(section):
-      for y in range(DIGIT_DATUM_HEIGHT):
-        if datum.getPixel(x + section * counterX, y) > 0:
-          featuresSection = featuresSection + 1
-        else:
-          featuresSection = featuresSection
-      if featuresSection > 0: # 0 = 66%
-        features[(counterX, y)] = featuresSection  # PROBLEM: overwriting itself
-      else:
-        features[(counterX, y)] = 0  # PROBLEM: overwriting itself
+    for counterY in range(DIGIT_DATUM_HEIGHT / section):
+      featuresSection = 0
+      for x in range(section):
+        for y in range(section):
 
+          if datum.getPixel(x + section * counterX, y + section * counterY) > 0:
+            featuresSection = featuresSection + 1
+
+      if featuresSection > 0:
+        features[(counterX, counterY)] = featuresSection
+      else:
+        features[(counterX, counterY)] = 0
   return features
 
 def contestFeatureExtractorDigit(datum):
@@ -144,6 +137,7 @@ def analysis(classifier, guesses, testLabels, testData, rawTestData, printImage)
   
   # Put any code here...
   # Example of use:
+  """
   for i in range(len(guesses)):
       prediction = guesses[i]
       truth = testLabels[i]
@@ -154,7 +148,7 @@ def analysis(classifier, guesses, testLabels, testData, rawTestData, printImage)
           print "Image: "
           print rawTestData[i]
           break
-
+  """
 
 ## =====================
 ## You don't have to modify any code below.
@@ -197,7 +191,7 @@ def readCommand( argv ):
   from optparse import OptionParser  
   parser = OptionParser(USAGE_STRING)
   
-  parser.add_option('-c', '--classifier', help=default('The type of classifier'), choices=['mostFrequent', 'nb', 'naiveBayes', 'perceptron', 'mira', 'minicontest'], default='mostFrequent')
+  parser.add_option('-c', '--classifier', help=default('The type of classifier'), choices=['kNearest','mostFrequent', 'nb', 'naiveBayes', 'perceptron', 'mira', 'minicontest'], default='mostFrequent')
   parser.add_option('-d', '--data', help=default('Dataset to use'), choices=['digits', 'faces'], default='digits')
   parser.add_option('-t', '--training', help=default('The size of the training set'), default=100, type="int")
   parser.add_option('-f', '--features', help=default('Whether to use enhanced features'), default=False, action="store_true")
@@ -264,8 +258,8 @@ def readCommand( argv ):
       print USAGE_STRING
       sys.exit(2)
 
-  if(options.classifier == "mostFrequent"):
-    classifier = mostFrequent.MostFrequentClassifier(legalLabels)
+  if(options.classifier == "kNearest"):
+    classifier = kNearest.kNearestClassifier(legalLabels)
   elif(options.classifier == "naiveBayes" or options.classifier == "nb"):
     classifier = naiveBayes.NaiveBayesClassifier(legalLabels)
     classifier.setSmoothing(options.smoothing)
