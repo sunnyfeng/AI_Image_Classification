@@ -54,9 +54,17 @@ class PerceptronClassifier:
           label = trainingLabels[i]
           pred = self.classify([data])[0]
           if pred != label:
-              self.weights[label] = self.weights[label] + data
-              self.weights[pred] = self.weights[pred] - data
-          #util.raiseNotDefined()
+              self.weights[label] = self.weights[label] + self.weighted(data, 1.0902)
+              self.weights[pred] = self.weights[pred] - self.weighted(data, 1)  #1.0902 and 1.0 = 67/68
+                                                                                  #1.089 and 1.001 = 71/65
+                                                                                 # 1.095 and 1.0 = 72/59
+
+
+  def weighted(self,data, multiple):
+    new = util.Counter()
+    for i in data:
+      new[i] = data[i]*multiple
+    return new
     
   def classify(self, data ):
     """

@@ -73,62 +73,7 @@ def enhancedFeatureExtractorDigit(datum):
   a = datum.getPixels()
 
   features = util.Counter()
-  section = 4
-
-
-  for counterX in range(DIGIT_DATUM_WIDTH / section):
-    for counterY in range(DIGIT_DATUM_HEIGHT / section):
-      featuresSection = 0
-      for x in range(section):
-        for y in range(section):
-
-          if datum.getPixel(x + section * counterX, y + section * counterY) > 0:
-            featuresSection = featuresSection + 1
-          else:
-            featuresSection = featuresSection
-
-      if featuresSection > 6:
-        features[(counterX,counterY)] = 2*featuresSection
-      else:
-        features[(counterX,counterY)] = .1*featuresSection
-
-  # top half
-  featuresSection = 0
-  for x in range(DIGIT_DATUM_WIDTH):
-    for y in range(DIGIT_DATUM_HEIGHT/2):
-      if datum.getPixel(x, y) > 0:
-        featuresSection = featuresSection + 1
-  features[(DIGIT_DATUM_WIDTH, DIGIT_DATUM_HEIGHT)] = featuresSection
-
-  # bottom half
-  featuresSection = 0
-  for x in range(DIGIT_DATUM_WIDTH):
-    for y in range(DIGIT_DATUM_HEIGHT/2):
-      if datum.getPixel(x, y + DIGIT_DATUM_HEIGHT/2) > 0:
-        featuresSection = featuresSection + 1
-  features[(DIGIT_DATUM_WIDTH, DIGIT_DATUM_HEIGHT + 1)] = featuresSection
-
-  # left half
-  featuresSection = 0
-  for x in range(DIGIT_DATUM_WIDTH/2):
-    for y in range(DIGIT_DATUM_HEIGHT):
-      if datum.getPixel(x, y) > 0:
-        featuresSection = featuresSection + 1
-  features[(DIGIT_DATUM_WIDTH+1, DIGIT_DATUM_HEIGHT)] = featuresSection
-
-  # right half
-  featuresSection = 0
-  for x in range(DIGIT_DATUM_WIDTH/2):
-    for y in range(DIGIT_DATUM_HEIGHT / 2):
-      if datum.getPixel(x + DIGIT_DATUM_WIDTH/2, y) > 0:
-        featuresSection = featuresSection + 1
-  features[(DIGIT_DATUM_WIDTH + 1, DIGIT_DATUM_HEIGHT + 1)] = featuresSection
-
-  return features
-
-def unused(datum):
-  features = util.Counter()
-  section = 2
+  section = 2 # 2 = 66%
 
   # horizontal strips
   for counterY in range(DIGIT_DATUM_HEIGHT / section):
@@ -145,7 +90,7 @@ def unused(datum):
       else:
         features[(x, counterY)] = 0  # PROBLEM: overwriting itself
 
-  # verticle strips
+  # vertical strips
   for counterX in range(DIGIT_DATUM_WIDTH / section):
     featuresSection = 0
     for x in range(section):
@@ -154,11 +99,12 @@ def unused(datum):
           featuresSection = featuresSection + 1
         else:
           featuresSection = featuresSection
-      if featuresSection > 0:
+      if featuresSection > 0: # 0 = 66%
         features[(counterX, y)] = featuresSection  # PROBLEM: overwriting itself
       else:
         features[(counterX, y)] = 0  # PROBLEM: overwriting itself
 
+  return features
 
 def contestFeatureExtractorDigit(datum):
   """
