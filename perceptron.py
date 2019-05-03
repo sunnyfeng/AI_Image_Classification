@@ -55,10 +55,9 @@ class PerceptronClassifier:
           pred = self.classify([data])[0]
           if pred != label:
               self.weights[label] = self.weights[label] + self.weighted(data, 1.095)
-              self.weights[pred] = self.weights[pred] - self.weighted(data, 1)  #1.0902 and 1.0 = 67/68
+              self.weights[pred] = self.weights[pred] - self.weighted(data, 1.0)  #1.0902 and 1.0 = 67/68
                                                                                   #1.089 and 1.001 = 71/65
                                                                                # 1.095 and 1.0 = 72/59
-              #add bias
 
   def weighted(self,data, multiple):
     new = util.Counter()
@@ -86,10 +85,10 @@ class PerceptronClassifier:
     """
     Returns a list of the 100 features with the greatest weight for some label
     """
-    featuresWeights = []
+    featuresWeight = []
 
     "*** YOUR CODE HERE ***"
     featuresWeight = self.weights[label].sortedKeys()[:100] #gets first 100 highest weights
 
-    return featuresWeights
+    return featuresWeight
 

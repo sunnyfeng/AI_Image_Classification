@@ -75,15 +75,14 @@ def enhancedFeatureExtractorDigit(datum):
   features = util.Counter()
   section = 4 # 4 = 73/64
 
+
   for x in range(DIGIT_DATUM_WIDTH):
     for y in range(DIGIT_DATUM_HEIGHT):
       if datum.getPixel(x, y) > 0:
         features[(x, y)] = 1
       else:
         features[(x, y)] = 0
-  """
-  return features
- """
+
   for counterX in range(DIGIT_DATUM_WIDTH / section):
     for counterY in range(DIGIT_DATUM_HEIGHT / section):
       featuresSection = 0
@@ -91,19 +90,24 @@ def enhancedFeatureExtractorDigit(datum):
         for y in range(section):
 
           if datum.getPixel(x + section * counterX, y + section * counterY) > 0:
-            featuresSection = featuresSection + 1
-
+            featuresSection = featuresSection + 1  #1.5 = 75/63   #1 = 74/67
+          else:
+            featuresSection = featuresSection
       if featuresSection > 0:
-        features[(counterX, counterY)] = featuresSection
+        features[(counterX + DIGIT_DATUM_WIDTH, counterY + DIGIT_DATUM_HEIGHT)] = featuresSection
       else:
-        features[(counterX, counterY)] = 0
+        features[(counterX + DIGIT_DATUM_WIDTH, counterY + DIGIT_DATUM_HEIGHT)] = 0
+
+  #bias
+  #features[(DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)] = 0
+
   return features
 
 def contestFeatureExtractorDigit(datum):
   """
   Specify features to use for the minicontest
   """
-  features =  basicFeatureExtractorDigit(datum)
+  features = basicFeatureExtractorDigit(datum)
   return features
 
 def enhancedFeatureExtractorFace(datum):
