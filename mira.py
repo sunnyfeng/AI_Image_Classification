@@ -54,49 +54,57 @@ class MiraClassifier:
     datum is a counter from features to values for those features
     representing a vector of values.
     """
-
-
-    bestWeights = {}
-    bestScore = 0.0
-
-    print(Cgrid)
-
-    for C in range(1):
-      #print(Cgrid[C])
-      #tempWeights = self.weights.copy()
-      for iteration in range(self.max_iterations):
-        print "Starting iteration ", iteration, "..."
-        for i in range(len(trainingData)):
-            "*** YOUR CODE HERE ***"
-
-            data = trainingData[i]
-            label = trainingLabels[i]
-            pred = self.classify([data])[0]
-            if pred != label:
-                #numer = self.abs(tempWeights[pred] - tempWeights[label])*data + 1.0
-                #denom = self.weighted(data, 2.0) * self.abs(data)
-                #tau = min(Cgrid[C], 0, (numer*1.0/denom*1.0))
-                tau = 0.008
-                #tempWeights[label] += self.weighted(data, tau)
-                #tempWeights[pred] -= self.weighted(data, tau)
-                self.weights[label] = self.weights[label] + self.weighted(data, tau)
-                self.weights[pred] = self.weights[pred] - self.weighted(data, tau)
-
-    
-    """
-    predictions = self.classifyWithWeight(validationData,tempWeights)
-      correct = 0.0
-      for i in range(len(predictions)):
-        if predictions[i] == validationLabels[i]:
-          correct += 1.0
-      score = correct / (len(predictions) * 1.0)
-      print(score)
+    tempWeights = self.weights.copy()
+    bestScore = 0
+    bestC = 0
+    for C in Cgrid:
+      self.weights = tempWeights
+      score = self.trainC(trainingData, trainingLabels, validationData, validationLabels, C)
       if score > bestScore:
-          bestWeights = tempWeights
           bestScore = score
+          bestC = C
+    print(bestC)
+    self.weights = tempWeights
+    score = self.trainC(trainingData, trainingLabels, validationData, validationLabels, bestC)
 
-    self.weights = bestWeights
+
+  def trainC(self, trainingData, trainingLabels, validationData, validationLabels, C):
     """
+    This method sets self.weights using MIRA.  Train the classifier for each value of C in Cgrid,
+    then store the weights that give the best accuracy on the validationData.
+
+    Use the provided self.weights[label] data structure so that
+    the classify method works correctly. Also, recall that a
+    datum is a counter from features to values for those features
+    representing a vector of values.
+    """
+    for iteration in range(self.max_iterations):
+      print "Starting iteration ", iteration, "..."
+      for i in range(len(trainingData)):
+        "*** YOUR CODE HERE ***"
+
+        data = trainingData[i]
+        label = trainingLabels[i]
+        pred = self.classify([data])[0]
+        if pred != label:
+           # numer = self.abs(tempWeights[pred] - tempWeights[label])*data + 1.0
+           # denom = self.weighted(data, 2.0) * self.abs(data)
+            # tau = min(Cgrid[C], 0, (numer*1.0/denom*1.0))
+          tau = C
+            # tempWeights[label] += self.weighted(data, tau)
+            # tempWeights[pred] -= self.weighted(data, tau)
+          self.weights[label] = self.weights[label] + self.weighted(data, tau)
+          self.weights[pred] = self.weights[pred] - self.weighted(data, tau)
+
+    predictions = self.classifyWithWeight(validationData,self.weights)
+    correct = 0.0
+    for i in range(len(predictions)):
+       if predictions[i] == validationLabels[i]:
+         correct += 1.0
+    score = correct / (len(predictions) * 1.0)
+    print(score)
+    return score
+
 
   def weighted(self,data, multiple):
     new = util.Counter()
