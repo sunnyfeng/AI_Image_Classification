@@ -13,6 +13,14 @@ import operator
 import scipy
 from scipy.spatial import distance
 
+
+
+"""
+
+  UNUSED !!!
+  
+"""
+
 class kNearestClassifier(classificationMethod.ClassificationMethod):
   """
   The MostFrequentClassifier is a very simple classifier: for
@@ -23,14 +31,13 @@ class kNearestClassifier(classificationMethod.ClassificationMethod):
     self.guess = None
     self.type = "kNearest"
     self.k = 5
+    self.legalLabels = legalLabels
   
   def train(self, data, labels, validationData, validationLabels):
     """
     Find the most common label in the training data.
     """
-    #counter = util.Counter()
-    #counter.incrementAll(labels, 1)
-    #self.guess = counter.argMax()
+
     neigh = self.getNeighbors(data, labels)
     self.predict(neigh)
   
@@ -49,16 +56,13 @@ class kNearestClassifier(classificationMethod.ClassificationMethod):
 
 
   def euclideanDist(self,a,b):
-    #dist = numpy.linalg.norm(a - b)
-    #return dist
-    return distance.euclidean(a, b)
+    dist = numpy.linalg.norm(a - b)
+    return dist
 
   def getNeighbors(self, data, labels):
     dists = []
     for x in range(len(data)):
-        dArr = []
         dArr = numpy.array(list(data))
-        lArr = []
         lArr = numpy.array(list(labels))
 
         print(dArr)
@@ -73,12 +77,12 @@ class kNearestClassifier(classificationMethod.ClassificationMethod):
     return neigh
 
   def predict(self, neigh):
-    majority = {}
+    votes = {}
     for x in range(len(neigh)):
       pred = neigh[x][-1]
-      if pred in majority:
-        majority[pred] += 1
+      if pred in votes:
+        votes[pred] += 1
       else:
-        majority[pred] = 1
-    sortedVotes = sorted(majority.iteritems(), key=operator.itemgetter(1), reverse=True)
+        votes[pred] = 1
+    sortedVotes = sorted(votes.iteritems(), key=operator.itemgetter(1), reverse=True)
     return sortedVotes[0][0]

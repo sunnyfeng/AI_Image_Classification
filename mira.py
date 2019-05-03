@@ -56,16 +56,25 @@ class MiraClassifier:
     """
     tempWeights = self.weights.copy()
     bestScore = 0
+    bestWeights = {}
     bestC = 0
+
+    #find the best C
     for C in Cgrid:
+      #reset weights
       self.weights = tempWeights
-      score = self.trainC(trainingData, trainingLabels, validationData, validationLabels, C)
+
+      #train
+      score, w = self.trainC(trainingData, trainingLabels, validationData, validationLabels, C)
+
+      #record if highest
       if score > bestScore:
           bestScore = score
+          bestWeights = w
           bestC = C
-    print(bestC)
-    self.weights = tempWeights
-    score = self.trainC(trainingData, trainingLabels, validationData, validationLabels, bestC)
+
+    #select the best weights
+    self.weights = bestWeights
 
 
   def trainC(self, trainingData, trainingLabels, validationData, validationLabels, C):
@@ -87,23 +96,23 @@ class MiraClassifier:
         label = trainingLabels[i]
         pred = self.classify([data])[0]
         if pred != label:
-           # numer = self.abs(tempWeights[pred] - tempWeights[label])*data + 1.0
-           # denom = self.weighted(data, 2.0) * self.abs(data)
-            # tau = min(Cgrid[C], 0, (numer*1.0/denom*1.0))
-          tau = C
-            # tempWeights[label] += self.weighted(data, tau)
-            # tempWeights[pred] -= self.weighted(data, tau)
+          #calculate tau
+          numer = self.abs(self.weights[pred] - self.weights[label])*data + 1.0
+          denom = self.weighted(data, 2.0) * self.abs(data)
+          tau = min(C, (numer*1.0/denom*1.0))
+
+          #update weight by data * tau
           self.weights[label] = self.weights[label] + self.weighted(data, tau)
           self.weights[pred] = self.weights[pred] - self.weighted(data, tau)
 
-    predictions = self.classifyWithWeight(validationData,self.weights)
+    #find accuracy
+    predictions = self.classify(trainingData)
     correct = 0.0
     for i in range(len(predictions)):
-       if predictions[i] == validationLabels[i]:
+       if predictions[i] == trainingLabels[i]:
          correct += 1.0
     score = correct / (len(predictions) * 1.0)
-    print(score)
-    return score
+    return score, self.weights
 
 
   def weighted(self,data, multiple):
@@ -133,21 +142,6 @@ class MiraClassifier:
       guesses.append(vectors.argMax())
     return guesses
 
-  def classifyWithWeight(self, data, weights):
-    """
-    Classifies each datum as the label that most closely matches the prototype vector
-    for that label.  See the project description for details.
-
-    Recall that a datum is a util.counter...
-    """
-    guesses = []
-    for datum in data:
-      vectors = util.Counter()
-      for l in self.legalLabels:
-        vectors[l] = weights[l] * datum
-      guesses.append(vectors.argMax())
-    return guesses
-
   
   def findHighOddsFeatures(self, label1, label2):
     """
@@ -157,6 +151,5 @@ class MiraClassifier:
     """
     featuresOdds = []
     "*** YOUR CODE HERE ***"
-    #featuresOdds = (self.weights[label1]-self.weights[label2]).sortedKeys()[:100]  # gets first 100 highest weights
     return featuresOdds
 
