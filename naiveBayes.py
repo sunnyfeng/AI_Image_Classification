@@ -60,8 +60,66 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     self.legalLabels.
     """
 
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    normLabel = util.Counter() 
+    normFeatProb = util.Counter() 
+    normCounts = util.Counter() 
+    
+    sizeTD = len(trainingData)   
+
+    for i in range(sizeTD):
+        dataPoint = trainingData[i]
+        label = trainingLabels[i]
+        normLabel[label] = normLabel[label] + 1
+        for feat, value in dataPoint.items():
+            normCounts[(feat,label)] = normCounts[(feat,label)] + 1
+            if value > 0: 
+                normFeatProb[(feat, label)] = normFeatProb[(feat, label)] + 1
+
+    for k in kgrid: 
+    
+        counts = util.Counter()
+        for key, val in normCounts.items():
+            counts[key] = counts[key] + val
+
+        past = util.Counter()
+        for key, val in normLabel.items():
+            past[key] = past[key] + val
+
+        featProb = util.Counter()
+        for key, val in normFeatProb.items():
+            featProb[key] = featProb[key] + val
+
+        smoothingFactor = 2.4*k
+
+        for label in self.legalLabels:
+            for feat in self.features:
+                featProb[ (feat, label)] =  featProb[ (feat, label)] + k
+                counts[(feat, label)] = counts[(feat, label)] + smoothingFactor 
+
+        
+        past.normalize()
+
+        for f, count in featProb.items():
+            featProb[f] = float(count) / counts[f]
+
+        self.featProb = featProb
+        self.past = past
+
+        predictions = self.classify(validationData)
+        accuracyCount =  [predictions[i] == validationLabels[i] for i in range(len(validationLabels))].count(True)
+        
+        highestAcc = -1  
+
+        if accuracyCount > highestAcc:
+            bestParams = (past, featProb, k)
+            highestAcc = accuracyCount
+    
+
+    self.past, self.featProb, self.k = bestParams
+
+
+
         
   def classify(self, testData):
     """
@@ -72,9 +130,9 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     guesses = []
     self.posteriors = [] # Log posteriors are stored for later data analysis (autograder).
     for datum in testData:
-      posterior = self.calculateLogJointProbabilities(datum)
-      guesses.append(posterior.argMax())
-      self.posteriors.append(posterior)
+        posterior = self.calculateLogJointProbabilities(datum)
+        guesses.append(posterior.argMax())
+        self.posteriors.append(posterior)
     return guesses
       
   def calculateLogJointProbabilities(self, datum):
@@ -86,12 +144,17 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     To get the list of all possible features or labels, use self.features and 
     self.legalLabels.
     """
-    logJoint = util.Counter()
-    
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    
-    return logJoint
+    lJ = util.Counter()
+    for label in self.legalLabels:
+        lJ[label] = math.log(self.past[label])
+        for feat, value in datum.items():
+            if value > 0:
+                lJ[label] = lJ[label] + math.log(self.featProb[feat,label])
+            if value < 0:
+                lJ[label] =  lJ[label] + math.log(1-self.featProb[feat,label])
+            if value == 0:
+                lJ[label] =  lJ[label] + math.log(1-self.featProb[feat,label])
+    return lJ
   
   def findHighOddsFeatures(self, label1, label2):
     """
@@ -100,12 +163,13 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     
     Note: you may find 'self.features' a useful way to loop through all possible features
     """
-    featuresOdds = []
-       
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    for fs in self.features:
+        val = (self.featProb[feat, first]/self.featProb[fs, second], fs)
+        allFOs.append(val)
+    allFOs.sort()
+    allFOs = [fs for val, feat in allFOs[-100:]]
 
-    return featuresOdds
+    return allFOs
     
 
     
